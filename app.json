@@ -1,0 +1,19 @@
+{
+  "expo": {
+    "name": "Farmer Mate",
+    "slug": "farmer-mate",
+    "scheme": "farmermate",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "ios": { "supportsTablet": true, "bundleIdentifier": "com.farmermate.app" },
+    "android": { "package": "com.farmermate.app" },
+    "web": { "bundler": "metro", "output": "single" },
+    "plugins": [
+      "expo-router",
+      ["expo-location", { "locationWhenInUsePermission": "Farmer Mate uses your location to show workers, machines and buyers near your farm." }]
+    ],
+    "experiments": { "typedRoutes": false, "reactCompiler": false }
+
+  }
+}
