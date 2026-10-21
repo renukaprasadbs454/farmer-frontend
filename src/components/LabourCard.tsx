@@ -12,8 +12,19 @@ type Props = {
   compact?: boolean;
 };
 
+const SKILL_ICONS: Record<string, string> = {
+  harvesting: '🌾',
+  planting: '🌱',
+  irrigation: '💧',
+  weeding: '🌿',
+  spraying: '🛡️',
+  loading: '📦',
+  general: '👨‍🌾',
+};
+
 export function LabourCard({ labourer, onPress, onSave, isSaved, compact }: Props) {
   const t = useT();
+  const serviceIcon = SKILL_ICONS[labourer.primarySkill] || '👨‍🌾';
   const availLabel =
     labourer.availability === 'available_today'
       ? t('availableToday')
@@ -35,11 +46,13 @@ export function LabourCard({ labourer, onPress, onSave, isSaved, compact }: Prop
     >
       <View style={s.row}>
         <View style={s.avatar}>
-          <Text style={s.avatarText}>{labourer.name.charAt(0)}</Text>
+          <Text style={{ fontSize: 26 }}>{serviceIcon}</Text>
         </View>
         <View style={{ flex: 1 }}>
           <Text style={s.name} numberOfLines={1}>{labourer.name}</Text>
-          <Text style={s.skill}>{labourCategoryLabel(labourer.primarySkill)}</Text>
+          <View style={s.confidentialBadge}>
+            <Text style={s.confidentialText}>🛡️ Verified Service · Assigned on Booking</Text>
+          </View>
         </View>
         {onSave && (
           <Pressable accessibilityRole="button" onPress={onSave} hitSlop={12} style={s.heart}>
@@ -57,11 +70,11 @@ export function LabourCard({ labourer, onPress, onSave, isSaved, compact }: Prop
 
           <View style={s.footer}>
             <View>
-              <Text style={s.price}>₹{labourer.dailyRate} {t('perDay')}</Text>
+              <Text style={s.price}>₹{labourer.dailyRate} <Text style={s.priceUnit}>{t('perDay')} / worker</Text></Text>
               <Text style={[s.avail, { color: availColor }]}>{availLabel}</Text>
             </View>
             <Pressable accessibilityRole="button" onPress={onPress} style={s.cta}>
-              <Text style={s.ctaText}>{t('viewWorker')}</Text>
+              <Text style={s.ctaText}>{t('bookService')}</Text>
             </Pressable>
           </View>
         </>
@@ -92,12 +105,26 @@ const s = StyleSheet.create({
   },
   avatarText: { fontSize: 22, color: '#fff', fontWeight: '800' },
   name: { fontSize: font.body, fontWeight: '700', color: colors.ink },
+  confidentialBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#E8F5EE',
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 6,
+    marginTop: 3,
+  },
+  confidentialText: {
+    fontSize: 10.5,
+    fontWeight: '700',
+    color: '#0F613B',
+  },
   skill: { fontSize: font.small, color: colors.muted, marginTop: 2 },
   heart: { padding: 4 },
   meta: { flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.sm + 2 },
   metaText: { fontSize: font.small, color: colors.muted },
   footer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: spacing.sm + 2 },
   price: { fontSize: font.body, fontWeight: '800', color: colors.primaryDark },
+  priceUnit: { fontSize: 11, fontWeight: '600', color: colors.muted },
   avail: { fontSize: font.small, fontWeight: '600', marginTop: 2 },
   cta: {
     backgroundColor: colors.primarySoft, borderRadius: radius.md,

@@ -18,7 +18,7 @@ export function Chip({ label, selected, onPress, emoji }: Props) {
 
 const s = StyleSheet.create({
   chip: {
-    minHeight: 52, paddingHorizontal: 18, borderRadius: radius.pill, borderWidth: 2,
+    minHeight: 46, paddingHorizontal: 16, borderRadius: radius.pill, borderWidth: 1.5,
     borderColor: colors.border, backgroundColor: colors.card, justifyContent: 'center',
   },
   selected: { backgroundColor: colors.primary, borderColor: colors.primary },

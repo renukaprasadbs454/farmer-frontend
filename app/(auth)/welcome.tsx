@@ -10,20 +10,25 @@ export default function Welcome() {
   const t = useT();
   const router = useRouter();
   const { lang, setLang } = useLangStore();
+
   return (
-    <ScreenContainer>
+    <ScreenContainer centered>
       <View style={s.hero}>
-        <Text style={{ fontSize: 88 }}>🌾</Text>
+        <Text style={s.logo}>🌾</Text>
         <Text style={s.name}>{t('appName')}</Text>
         <Text style={s.tag}>{t('tagline')}</Text>
       </View>
-      <Text style={s.label}>{t('chooseLanguage')}</Text>
-      <View style={s.row}>
-        {LANGUAGES.map((l) => (
-          <Chip key={l.code} label={l.label} selected={lang === l.code} onPress={() => setLang(l.code)} />
-        ))}
+
+      <View style={s.languageBlock}>
+        <Text style={s.label}>{t('chooseLanguage')}</Text>
+        <View style={s.row}>
+          {LANGUAGES.map((l) => (
+            <Chip key={l.code} label={l.label} selected={lang === l.code} onPress={() => setLang(l.code)} />
+          ))}
+        </View>
       </View>
-      <View style={{ marginTop: spacing.xl }}>
+
+      <View style={s.buttonWrap}>
         <Button title={t('getStarted')} onPress={() => router.push('/login')} />
       </View>
     </ScreenContainer>
@@ -31,9 +36,45 @@ export default function Welcome() {
 }
 
 const s = StyleSheet.create({
-  hero: { alignItems: 'center', paddingVertical: spacing.xl },
-  name: { fontSize: font.hero, fontWeight: '800', color: colors.primaryDark, marginTop: 8 },
-  tag: { fontSize: font.body + 2, color: colors.muted, marginTop: 6, textAlign: 'center' },
-  label: { fontSize: font.label, fontWeight: '700', color: colors.ink, marginBottom: spacing.sm },
-  row: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  hero: {
+    alignItems: 'center',
+    paddingVertical: spacing.xl,
+  },
+  logo: {
+    fontSize: 68,
+  },
+  name: {
+    fontSize: font.hero,
+    fontWeight: '800',
+    color: colors.primaryDark,
+    marginTop: spacing.s,
+    textAlign: 'center',
+  },
+  tag: {
+    fontSize: font.body,
+    color: colors.muted,
+    marginTop: 6,
+    textAlign: 'center',
+  },
+  label: {
+    fontSize: font.label,
+    fontWeight: '700',
+    color: colors.ink,
+    marginBottom: spacing.sm,
+    textAlign: 'center',
+  },
+  languageBlock: {
+    alignItems: 'center',
+    width: '100%',
+  },
+  row: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 10,
+  },
+  buttonWrap: {
+    marginTop: spacing.xl,
+    width: '100%',
+  },
 });

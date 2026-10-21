@@ -52,7 +52,9 @@ export function MachineryCard({ machinery, onPress, onSave, isSaved, compact }: 
         </View>
         <View style={{ flex: 1 }}>
           <Text style={s.name} numberOfLines={1}>{machinery.name}</Text>
-          <Text style={s.type}>{machineryCategoryLabel(machinery.type)}</Text>
+          <View style={s.confidentialBadge}>
+            <Text style={s.confidentialText}>🛡️ Verified Fleet · Assigned on Booking</Text>
+          </View>
         </View>
         {onSave && (
           <Pressable accessibilityRole="button" onPress={onSave} hitSlop={12} style={s.heart}>
@@ -81,7 +83,7 @@ export function MachineryCard({ machinery, onPress, onSave, isSaved, compact }: 
           <View style={s.footer}>
             <Text style={[s.avail, { color: availColor }]}>{availLabel}</Text>
             <Pressable accessibilityRole="button" onPress={onPress} style={s.cta}>
-              <Text style={s.ctaText}>{t('viewMachine')}</Text>
+              <Text style={s.ctaText}>{t('bookService')}</Text>
             </Pressable>
           </View>
         </>
@@ -111,6 +113,19 @@ const s = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
   name: { fontSize: font.body, fontWeight: '700', color: colors.ink },
+  confidentialBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#E8F5EE',
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 6,
+    marginTop: 3,
+  },
+  confidentialText: {
+    fontSize: 10.5,
+    fontWeight: '700',
+    color: '#0F613B',
+  },
   type: { fontSize: font.small, color: colors.muted, marginTop: 2 },
   heart: { padding: 4 },
   meta: { flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.sm + 2 },

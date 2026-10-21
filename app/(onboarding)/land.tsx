@@ -101,6 +101,9 @@ export default function Land() {
   const [total, setTotal] = useState(farm.totalLand ? String(farm.totalLand) : '');
   const [cultivated, setCultivated] = useState(farm.cultivatedLand ? String(farm.cultivatedLand) : '');
   const [boreDepth, setBoreDepth] = useState(farm.borewellDepthFeet ? String(farm.borewellDepthFeet) : '');
+  const [waterAvailability, setWaterAvailability] = useState<'Year-round' | 'Seasonal' | 'Insufficient' | undefined>(
+    farm.borewellWaterAvailability || 'Year-round'
+  );
 
   const t = Number(total);
   const c = Number(cultivated);
@@ -145,6 +148,7 @@ export default function Land() {
       totalLand: t,
       cultivatedLand: c,
       borewellDepthFeet: boreDepth ? Number(boreDepth) : undefined,
+      borewellWaterAvailability: (farm.waterSources || []).includes('borewell') ? waterAvailability : undefined,
     });
     router.push('/crops');
   };
@@ -213,12 +217,12 @@ export default function Land() {
           />
           <Text style={s.label}>Water availability from borewell?</Text>
           <View style={s.chips}>
-            {['Year-round', 'Seasonal', 'Insufficient'].map((opt) => (
+            {(['Year-round', 'Seasonal', 'Insufficient'] as const).map((opt) => (
               <Chip
                 key={opt}
                 label={opt}
-                selected={false}
-                onPress={() => {}}
+                selected={waterAvailability === opt}
+                onPress={() => setWaterAvailability(opt)}
               />
             ))}
           </View>

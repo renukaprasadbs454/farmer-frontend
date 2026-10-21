@@ -110,6 +110,12 @@ export default function MachineryBookingScreen() {
         <Text style={s.title}>{t('bookingDetails')}</Text>
         <Text style={s.subtitle}>{machine.name}</Text>
 
+        <View style={s.confidentialNote}>
+          <Text style={s.confidentialNoteText}>
+            🔒 Provider Confidentiality: Certified equipment and operator will be dispatched to your farm on {date}. Operator and fleet partner personal details are kept strictly confidential.
+          </Text>
+        </View>
+
         <Input label={t('serviceType')} value={serviceDesc} onChangeText={setServiceDesc} placeholder="e.g. Ploughing" />
         <Input label={t('date')} value={date} onChangeText={setDate} placeholder="YYYY-MM-DD" />
         <Input label={t('startTime')} value={startTime} onChangeText={setStartTime} placeholder="HH:MM" />
@@ -151,7 +157,21 @@ const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.bg },
   scroll: { padding: spacing.lg },
   title: { fontSize: font.title, fontWeight: '800', color: colors.ink },
-  subtitle: { fontSize: font.body, color: colors.muted, marginBottom: spacing.lg },
+  subtitle: { fontSize: font.body, color: colors.muted, marginBottom: spacing.md },
+  confidentialNote: {
+    backgroundColor: '#EBF4EE',
+    borderWidth: 1,
+    borderColor: '#C5E2D0',
+    padding: spacing.sm + 2,
+    borderRadius: radius.md,
+    marginBottom: spacing.md,
+  },
+  confidentialNoteText: {
+    fontSize: 11.5,
+    color: '#0F613B',
+    fontWeight: '600',
+    lineHeight: 16,
+  },
   fieldLabel: { fontSize: font.label, fontWeight: '600', color: colors.ink, marginBottom: 6 },
   toggleRow: { flexDirection: 'row', gap: 10, marginBottom: spacing.md },
   summary: { backgroundColor: colors.primarySoft, borderRadius: radius.lg, padding: spacing.md, marginTop: spacing.md },

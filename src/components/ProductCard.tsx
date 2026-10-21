@@ -1,5 +1,5 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { colors, font, radius, shadow, spacing } from '../constants/theme';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { colors, radius, spacing } from '../constants/theme';
 import { Product } from '../types';
 
 interface ProductCardProps {
@@ -18,20 +18,28 @@ export function ProductCard({
   compact = false,
 }: ProductCardProps) {
   const mainVariant = product.variants[0];
+  const image = product.images?.[0];
+  const hasImageUrl = typeof image === 'string' && /^https?:\/\//i.test(image);
 
   return (
     <Pressable
-      style={({ pressed }) => [
-        styles.card,
-        compact && styles.compactCard,
-        pressed && styles.pressed,
-      ]}
+      accessibilityRole="button"
+      accessibilityLabel={product.name}
+      style={({ pressed }) => [styles.card, compact && styles.compactCard, pressed && styles.pressed]}
       onPress={onPress}
     >
       <View style={styles.imageContainer}>
-        <Text style={styles.productEmoji}>{product.images[0] || '🌾'}</Text>
+        {hasImageUrl ? (
+          <Image source={{ uri: image }} style={styles.productImage} resizeMode="cover" />
+        ) : (
+          <Text style={styles.productEmoji} numberOfLines={1}>
+            {image || '🌾'}
+          </Text>
+        )}
         {onWishlistToggle && (
           <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
             style={styles.wishlistBtn}
             onPress={(e) => {
               e.stopPropagation();
@@ -39,13 +47,15 @@ export function ProductCard({
             }}
             hitSlop={10}
           >
-            <Text style={styles.wishlistHeart}>{isWishlisted ? '❤️' : '🤍'}</Text>
+            <Text style={styles.wishlistHeart}>{isWishlisted ? '♥' : '♡'}</Text>
           </Pressable>
         )}
       </View>
 
       <View style={styles.infoContainer}>
-        <Text style={styles.brandText}>{product.brand}</Text>
+        <Text style={styles.brandText} numberOfLines={1}>
+          {product.brand}
+        </Text>
         <Text style={styles.nameText} numberOfLines={2}>
           {product.name}
         </Text>
@@ -55,17 +65,15 @@ export function ProductCard({
           <Text style={styles.reviewsText}>({product.reviewCount})</Text>
         </View>
 
-        <Text style={styles.packSizeText}>{mainVariant?.packSize}</Text>
+        <Text style={styles.packSizeText} numberOfLines={1}>
+          {mainVariant?.packSize}
+        </Text>
 
         <View style={styles.priceRow}>
-          <Text style={styles.priceText}>
-            ₹{(mainVariant?.price || 0).toLocaleString('en-IN')}
-          </Text>
+          <Text style={styles.priceText}>₹{(mainVariant?.price || 0).toLocaleString('en-IN')}</Text>
 
           {mainVariant?.mrp && mainVariant.mrp > mainVariant.price && (
-            <Text style={styles.mrpText}>
-              ₹{mainVariant.mrp.toLocaleString('en-IN')}
-            </Text>
+            <Text style={styles.mrpText}>₹{mainVariant.mrp.toLocaleString('en-IN')}</Text>
           )}
         </View>
       </View>
@@ -76,30 +84,40 @@ export function ProductCard({
 const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.surface,
-    borderRadius: radius.m,
-    padding: spacing.s,
+    borderRadius: radius.md,
+    padding: spacing.sm,
     borderWidth: 1,
     borderColor: colors.border,
-    ...shadow.card,
+    shadowColor: '#0B2A14',
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 1,
   },
   compactCard: {
-    width: 180,
+    width: 152,
   },
   pressed: {
-    opacity: 0.9,
-    transform: [{ scale: 0.99 }],
+    opacity: 0.92,
+    transform: [{ scale: 0.98 }],
   },
   imageContainer: {
-    height: 110,
+    height: 104,
     backgroundColor: colors.primarySoft,
-    borderRadius: radius.s,
+    borderRadius: radius.sm,
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
-    marginBottom: spacing.xs,
+    marginBottom: spacing.sm,
+    overflow: 'hidden',
+  },
+  productImage: {
+    width: '100%',
+    height: '100%',
   },
   productEmoji: {
-    fontSize: 48,
+    fontSize: 42,
+    maxWidth: '100%',
   },
   wishlistBtn: {
     position: 'absolute',
@@ -107,64 +125,71 @@ const styles = StyleSheet.create({
     right: 6,
     backgroundColor: colors.surface,
     borderRadius: radius.full,
-    width: 28,
-    height: 28,
+    width: 30,
+    height: 30,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   wishlistHeart: {
-    fontSize: 14,
+    fontSize: 16,
+    color: colors.primary,
+    fontWeight: '800',
   },
   infoContainer: {
-    gap: 2,
+    gap: 3,
   },
   brandText: {
-    fontFamily: font.regular,
-    fontSize: 11,
-    color: colors.textMuted,
+    fontSize: 10,
+    fontWeight: '800',
+    color: colors.primary,
+    textTransform: 'uppercase',
   },
   nameText: {
-    fontFamily: font.bold,
     fontSize: 13,
-    color: colors.textPrimary,
-    lineHeight: 18,
-    minHeight: 36,
+    fontWeight: '800',
+    color: colors.ink,
+    lineHeight: 17,
+    minHeight: 34,
   },
   ratingRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    marginVertical: 2,
   },
   starText: {
-    fontFamily: font.bold,
-    fontSize: 12,
-    color: colors.accent,
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#8A6400',
+    backgroundColor: '#FFF8DB',
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: radius.xs,
   },
   reviewsText: {
-    fontFamily: font.regular,
     fontSize: 11,
-    color: colors.textMuted,
+    color: colors.muted,
+    fontWeight: '600',
   },
   packSizeText: {
-    fontFamily: font.regular,
     fontSize: 11,
-    color: colors.textSecondary,
+    color: colors.muted,
+    fontWeight: '700',
   },
   priceRow: {
     flexDirection: 'row',
     alignItems: 'baseline',
     gap: 6,
-    marginTop: 4,
+    marginTop: 3,
   },
   priceText: {
-    fontFamily: font.bold,
     fontSize: 15,
+    fontWeight: '900',
     color: colors.primary,
   },
   mrpText: {
-    fontFamily: font.regular,
-    fontSize: 12,
+    fontSize: 11,
     color: colors.textMuted,
     textDecorationLine: 'line-through',
   },

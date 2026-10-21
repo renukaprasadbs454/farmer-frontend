@@ -77,9 +77,16 @@ export default function MachineryDetailScreen() {
           <Text style={[s.avail, { color: availColor }]}>{availLabel}</Text>
         </View>
 
-        {/* Provider */}
-        <Text style={s.section}>{t('provider')}</Text>
-        <Text style={s.body}>{machine.provider}</Text>
+        {/* Confidentiality Dispatch Notice */}
+        <View style={s.confidentialBox}>
+          <Text style={s.confidentialBoxIcon}>🔒</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={s.confidentialBoxTitle}>Confidential Equipment & Operator Dispatch</Text>
+            <Text style={s.confidentialBoxDesc}>
+              Service partner and operator personal details are confidential. Farmer Mate dispatches certified farm machinery and trained operators to your farm location on your scheduled date.
+            </Text>
+          </View>
+        </View>
 
         {/* Specifications */}
         <Text style={s.section}>{t('specifications')}</Text>
@@ -166,6 +173,31 @@ const s = StyleSheet.create({
   stat: { fontSize: font.small, color: colors.ink },
   statSep: { fontSize: font.body, color: colors.muted, marginHorizontal: 8 },
   avail: { fontSize: font.body, fontWeight: '700', marginTop: spacing.sm },
+  confidentialBox: {
+    flexDirection: 'row',
+    backgroundColor: '#EBF4EE',
+    borderWidth: 1,
+    borderColor: '#C5E2D0',
+    borderRadius: radius.md,
+    padding: spacing.md,
+    marginTop: spacing.md,
+    gap: 12,
+    alignItems: 'center',
+  },
+  confidentialBoxIcon: {
+    fontSize: 24,
+  },
+  confidentialBoxTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#0F613B',
+    marginBottom: 2,
+  },
+  confidentialBoxDesc: {
+    fontSize: 11.5,
+    color: '#2E4C38',
+    lineHeight: 16,
+  },
   section: { fontSize: font.body, fontWeight: '800', color: colors.ink, marginTop: spacing.lg, marginBottom: spacing.sm },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   card: { backgroundColor: colors.card, borderRadius: radius.lg, padding: spacing.md, ...shadow.card },

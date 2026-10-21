@@ -10,6 +10,8 @@ interface ProductState {
   recommendedProducts: Product[];
   recentlyViewedIds: string[];
   searchQuery: string;
+  selectedCategories: string[];
+  sortBy: 'relevance' | 'price_low_high' | 'price_high_low' | 'rating' | 'newest';
   filters: ProductFilters;
   loading: boolean;
   error: string | null;
@@ -17,6 +19,9 @@ interface ProductState {
   fetchProducts: () => Promise<void>;
   fetchHomeSections: (farmerCrops: string[]) => Promise<void>;
   setSearchQuery: (q: string) => void;
+  setSelectedCategories: (categories: string[]) => void;
+  toggleCategory: (category: string) => void;
+  setSortBy: (sort: 'relevance' | 'price_low_high' | 'price_high_low' | 'rating' | 'newest') => void;
   setFilters: (filters: Partial<ProductFilters>) => void;
   resetFilters: () => void;
   addRecentlyViewed: (productId: string) => void;
@@ -42,6 +47,8 @@ export const useProductStore = create<ProductState>()(
       recommendedProducts: [],
       recentlyViewedIds: [],
       searchQuery: '',
+      selectedCategories: [],
+      sortBy: 'relevance',
       filters: DEFAULT_FILTERS,
       loading: false,
       error: null,
@@ -49,13 +56,14 @@ export const useProductStore = create<ProductState>()(
       fetchProducts: async () => {
         set({ loading: true, error: null });
         try {
-          const { searchQuery, filters } = get();
-          let results: Product[] = [];
-          if (searchQuery.trim()) {
-            results = await productService.searchProducts(searchQuery);
-          } else {
-            results = await productService.getProducts(filters);
-          }
+          const { searchQuery, selectedCategories, sortBy, filters } = get();
+          const mergedFilters: Partial<ProductFilters> = {
+            ...filters,
+            categories: selectedCategories as any,
+            sortBy,
+            search: searchQuery,
+          };
+          const results = await productService.getProducts(mergedFilters);
           set({ products: results, loading: false });
         } catch (e) {
           set({ loading: false, error: (e as Error).message });
@@ -77,13 +85,38 @@ export const useProductStore = create<ProductState>()(
         get().fetchProducts();
       },
 
+      setSelectedCategories: (categories) => {
+        set({ selectedCategories: categories });
+        get().fetchProducts();
+      },
+
+      toggleCategory: (category) => {
+        const { selectedCategories } = get();
+        const exists = selectedCategories.includes(category);
+        const updated = exists
+          ? selectedCategories.filter((c) => c !== category)
+          : [...selectedCategories, category];
+        set({ selectedCategories: updated });
+        get().fetchProducts();
+      },
+
+      setSortBy: (sort) => {
+        set({ sortBy: sort });
+        get().fetchProducts();
+      },
+
       setFilters: (patch) => {
         set((s) => ({ filters: { ...s.filters, ...patch } }));
         get().fetchProducts();
       },
 
       resetFilters: () => {
-        set({ filters: DEFAULT_FILTERS });
+        set({
+          filters: DEFAULT_FILTERS,
+          selectedCategories: [],
+          searchQuery: '',
+          sortBy: 'relevance',
+        });
         get().fetchProducts();
       },
 

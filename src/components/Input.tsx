@@ -7,7 +7,11 @@ export function Input({ label, error, ...rest }: Props) {
   return (
     <View style={{ marginBottom: spacing.md }}>
       {label ? <Text style={s.label}>{label}</Text> : null}
-      <TextInput placeholderTextColor={colors.muted} {...rest} style={[s.input, error ? s.inputError : null]} />
+      <TextInput
+        placeholderTextColor={colors.muted}
+        {...rest}
+        style={[s.input, rest.style, error ? s.inputError : null]}
+      />
       {error ? <Text style={s.error}>{error}</Text> : null}
     </View>
   );
@@ -16,7 +20,7 @@ export function Input({ label, error, ...rest }: Props) {
 const s = StyleSheet.create({
   label: { fontSize: font.label, fontWeight: '600', color: colors.ink, marginBottom: 6 },
   input: {
-    minHeight: TOUCH, borderRadius: radius.md, borderWidth: 2, borderColor: colors.border,
+    minHeight: TOUCH, borderRadius: radius.md, borderWidth: 1.5, borderColor: colors.border,
     backgroundColor: colors.card, paddingHorizontal: 16, fontSize: font.body, color: colors.ink,
   },
   inputError: { borderColor: colors.danger },

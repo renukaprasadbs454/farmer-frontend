@@ -8,10 +8,12 @@ interface AuthState {
   token: string | null;
   mobile: string;
   accountId: string | null;
+  sessionChecked: boolean;
   loading: boolean;
   error: string | null;
   sendOtp: (mobile: string) => Promise<boolean>;
   verifyOtp: (otp: string) => Promise<boolean>;
+  validateSession: () => Promise<boolean>;
   setToken: (token: string) => void;
   logout: () => void;
 }
@@ -22,6 +24,7 @@ export const useAuthStore = create<AuthState>()(
       token: null,
       mobile: '',
       accountId: null,
+      sessionChecked: false,
       loading: false,
       error: null,
 
@@ -52,7 +55,7 @@ export const useAuthStore = create<AuthState>()(
           // Sync farmer name, address, crops, and onboarded status from backend DB!
           useFarmerStore.getState().syncWithBackendProfile(chosenProfile, mobile, accountId);
 
-          set({ token, accountId, loading: false });
+          set({ token, accountId, loading: false, sessionChecked: true });
           return true;
         } catch (e) {
           set({ loading: false, error: (e as Error).message });
@@ -60,12 +63,38 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      setToken: (token: string) => set({ token }),
+      validateSession: async () => {
+        const token = get().token;
+        if (!token) {
+          useFarmerStore.getState().resetFarmer();
+          set({ mobile: '', accountId: null, sessionChecked: true, loading: false, error: null });
+          return false;
+        }
 
-      logout: () => {
+        set({ loading: true, error: null });
+        try {
+          const { account, activeProfile } = await authService.validateSession(token);
+          const mobile = activeProfile?.account?.phoneNumber || account?.phoneNumber || get().mobile;
+          const accountId = account?.id || activeProfile?.accountId || get().accountId || null;
+
+          useFarmerStore.getState().syncWithBackendProfile(activeProfile, mobile, accountId);
+          set({ mobile, accountId, loading: false, sessionChecked: true, error: null });
+          return true;
+        } catch {
+          await AsyncStorage.multiRemove(['fm-auth', 'fm-farmer']);
+          useFarmerStore.getState().resetFarmer();
+          set({ token: null, mobile: '', accountId: null, loading: false, error: null, sessionChecked: true });
+          return false;
+        }
+      },
+
+      setToken: (token: string) => set({ token, sessionChecked: true }),
+
+      logout: async () => {
         // Clear cached farmer profile & stores on logout
+        await AsyncStorage.multiRemove(['fm-auth', 'fm-farmer']);
         useFarmerStore.getState().resetFarmer();
-        set({ token: null, mobile: '', accountId: null, error: null });
+        set({ token: null, mobile: '', accountId: null, error: null, sessionChecked: true });
       },
     }),
     {

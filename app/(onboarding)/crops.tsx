@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { useMemo, useState } from 'react';
+import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Chip } from '../../src/components/Chip';
 import { OnboardingShell } from '../../src/components/OnboardingShell';
 import { CROPS } from '../../src/constants/crops';
@@ -53,13 +53,83 @@ export default function CropSelection() {
   const [error, setError] = useState<string | null>(null);
   const [ph, setPH] = useState(farm.soilPH || '');
 
-  const toggle = (id: string) =>
-    setCrops(crops.includes(id) ? crops.filter((c) => c !== id) : [...crops, id]);
+  // Custom crops for "Other" option
+  const [otherCropInput, setOtherCropInput] = useState('');
+  const [customCrops, setCustomCrops] = useState<string[]>(() =>
+    crops.filter((c) => !CROPS.some((k) => k.id === c) && c !== 'other')
+  );
 
-  const finish = () =>
+  const toggle = (id: string) => {
+    if (id === 'other') {
+      if (crops.includes('other')) {
+        // Deselect other: remove 'other' and also remove custom crops from crops
+        setCrops(crops.filter((c) => c !== 'other' && !customCrops.includes(c)));
+      } else {
+        // Select other: add 'other' and any existing customCrops
+        setCrops(Array.from(new Set([...crops, 'other', ...customCrops])));
+      }
+    } else {
+      setCrops(crops.includes(id) ? crops.filter((c) => c !== id) : [...crops, id]);
+    }
+  };
+
+  const handleAddCustomCrop = () => {
+    const trimmed = otherCropInput.trim();
+    if (!trimmed) return;
+    const items = trimmed.split(',').map((s) => s.trim()).filter(Boolean);
+    const updatedCustom = Array.from(new Set([...customCrops, ...items]));
+    setCustomCrops(updatedCustom);
+    setOtherCropInput('');
+
+    // Ensure standard selected crops + 'other' + custom crops are in store
+    const standardCrops = crops.filter((c) => CROPS.some((k) => k.id === c));
+    setCrops(Array.from(new Set([...standardCrops, 'other', ...updatedCustom])));
+  };
+
+  const handleRemoveCustomCrop = (name: string) => {
+    const updatedCustom = customCrops.filter((c) => c !== name);
+    setCustomCrops(updatedCustom);
+    const standardCrops = crops.filter((c) => CROPS.some((k) => k.id === c));
+    setCrops(
+      Array.from(
+        new Set([
+          ...standardCrops,
+          ...(crops.includes('other') ? ['other'] : []),
+          ...updatedCustom,
+        ])
+      )
+    );
+  };
+
+  const selectedCropsDisplayList = useMemo(() => {
+    const list: string[] = [];
+    crops.forEach((id) => {
+      if (id === 'other') {
+        if (customCrops.length === 0) list.push('Other');
+      } else {
+        const standard = CROPS.find((c) => c.id === id);
+        if (standard) {
+          list.push(standard.label);
+        } else {
+          list.push(id);
+        }
+      }
+    });
+    return Array.from(new Set(list));
+  }, [crops, customCrops]);
+
+  const finish = () => {
+    let finalCrops = [...crops];
+    const pendingInput = otherCropInput.trim();
+    if (crops.includes('other') && pendingInput) {
+      const items = pendingInput.split(',').map((s) => s.trim()).filter(Boolean);
+      finalCrops = Array.from(new Set([...finalCrops, ...items]));
+      setCrops(finalCrops);
+    }
     complete().catch((err: any) =>
       setError(err.message || 'Could not save profile. Please try again.')
     );
+  };
 
   return (
     <OnboardingShell
@@ -69,7 +139,7 @@ export default function CropSelection() {
       onBack={() => router.back()}
       onNext={finish}
       nextLabel={t('finish')}
-      nextDisabled={crops.length === 0}
+      nextDisabled={selectedCropsDisplayList.length === 0}
       loading={saving}
     >
       {/* ─── Soil Type ─── */}
@@ -128,11 +198,59 @@ export default function CropSelection() {
         ))}
       </View>
 
-      {crops.length > 0 && (
+      {/* ─── Custom Crops Input when "Other" is selected ─── */}
+      {crops.includes('other') && (
+        <View style={s.otherCard}>
+          <View style={s.otherHeader}>
+            <Text style={s.otherTitle}>➕ What other crops do you grow?</Text>
+            <Text style={s.otherHint}>Type crop name and tap Add (e.g. Groundnut, Turmeric, Ginger)</Text>
+          </View>
+
+          <View style={s.otherInputRow}>
+            <TextInput
+              style={s.otherInput}
+              placeholder="Enter crop name..."
+              placeholderTextColor={colors.muted}
+              value={otherCropInput}
+              onChangeText={setOtherCropInput}
+              onSubmitEditing={handleAddCustomCrop}
+              returnKeyType="done"
+            />
+            <TouchableOpacity
+              style={[s.otherAddBtn, !otherCropInput.trim() && s.otherAddBtnDisabled]}
+              onPress={handleAddCustomCrop}
+              disabled={!otherCropInput.trim()}
+            >
+              <Text style={s.otherAddBtnText}>+ Add</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Render added custom crops */}
+          {customCrops.length > 0 && (
+            <View style={s.customTagsRow}>
+              {customCrops.map((cropName) => (
+                <View key={cropName} style={s.customTag}>
+                  <Text style={s.customTagText}>🌱 {cropName}</Text>
+                  <TouchableOpacity
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    onPress={() => handleRemoveCustomCrop(cropName)}
+                  >
+                    <Text style={s.customTagRemove}>✕</Text>
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </View>
+          )}
+        </View>
+      )}
+
+      {selectedCropsDisplayList.length > 0 && (
         <View style={s.cropSummary}>
-          <Text style={s.cropSummaryTitle}>✅ Selected crops ({crops.length})</Text>
+          <Text style={s.cropSummaryTitle}>
+            ✅ Selected crops ({selectedCropsDisplayList.length})
+          </Text>
           <Text style={s.cropSummaryList}>
-            {crops.map((id) => CROPS.find((c) => c.id === id)?.label).filter(Boolean).join(' • ')}
+            {selectedCropsDisplayList.join(' • ')}
           </Text>
         </View>
       )}
@@ -140,15 +258,35 @@ export default function CropSelection() {
   );
 }
 
-function SoilCard({ emoji, label, desc, selected, onPress }: { emoji: string; label: string; desc: string; selected: boolean; onPress: () => void }) {
+function SoilCard({
+  emoji,
+  label,
+  desc,
+  selected,
+  onPress,
+}: {
+  emoji: string;
+  label: string;
+  desc: string;
+  selected: boolean;
+  onPress: () => void;
+}) {
   return (
-    <View
-      style={[sc.card, selected && sc.cardSelected]}
-    >
-      <Text style={sc.emoji} onPress={onPress}>{emoji}</Text>
-      <Text style={[sc.label, selected && sc.labelSelected]} onPress={onPress}>{label}</Text>
-      <Text style={sc.desc} numberOfLines={2} onPress={onPress}>{desc}</Text>
-      {selected && <View style={sc.badge}><Text style={sc.badgeText}>✓</Text></View>}
+    <View style={[sc.card, selected && sc.cardSelected]}>
+      <Text style={sc.emoji} onPress={onPress}>
+        {emoji}
+      </Text>
+      <Text style={[sc.label, selected && sc.labelSelected]} onPress={onPress}>
+        {label}
+      </Text>
+      <Text style={sc.desc} numberOfLines={2} onPress={onPress}>
+        {desc}
+      </Text>
+      {selected && (
+        <View style={sc.badge}>
+          <Text style={sc.badgeText}>✓</Text>
+        </View>
+      )}
     </View>
   );
 }
@@ -170,9 +308,15 @@ const sc = StyleSheet.create({
   labelSelected: { color: colors.primary },
   desc: { fontSize: 12, color: colors.muted, lineHeight: 17 },
   badge: {
-    position: 'absolute', top: 8, right: 8,
-    width: 22, height: 22, borderRadius: 11,
-    backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center',
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   badgeText: { color: '#fff', fontSize: 13, fontWeight: '700' },
 });
@@ -181,6 +325,88 @@ const s = StyleSheet.create({
   soilGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginBottom: spacing.sm },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: spacing.md },
   soilTestRow: { marginBottom: spacing.md },
+  otherCard: {
+    backgroundColor: '#fff',
+    borderRadius: radius.md,
+    borderWidth: 1.5,
+    borderColor: colors.primary,
+    padding: spacing.md,
+    marginBottom: spacing.md,
+    gap: spacing.sm,
+  },
+  otherHeader: {
+    marginBottom: 2,
+  },
+  otherTitle: {
+    fontSize: font.body,
+    fontWeight: '700',
+    color: colors.primary,
+  },
+  otherHint: {
+    fontSize: 12,
+    color: colors.muted,
+    marginTop: 2,
+  },
+  otherInputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  otherInput: {
+    flex: 1,
+    minHeight: 46,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    borderRadius: radius.sm,
+    paddingHorizontal: 14,
+    fontSize: font.body,
+    color: colors.ink,
+    backgroundColor: colors.card,
+  },
+  otherAddBtn: {
+    backgroundColor: colors.primary,
+    paddingHorizontal: 18,
+    minHeight: 46,
+    borderRadius: radius.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  otherAddBtnDisabled: {
+    backgroundColor: colors.disabled,
+  },
+  otherAddBtnText: {
+    color: '#fff',
+    fontWeight: '700',
+    fontSize: font.body,
+  },
+  customTagsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 4,
+  },
+  customTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: colors.primarySoft,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: colors.primary,
+  },
+  customTagText: {
+    fontSize: font.small,
+    fontWeight: '600',
+    color: colors.ink,
+  },
+  customTagRemove: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: colors.muted,
+    marginLeft: 2,
+  },
   cropSummary: {
     backgroundColor: colors.primarySoft,
     borderRadius: radius.md,

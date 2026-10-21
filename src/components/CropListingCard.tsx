@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors, font, radius, shadow, spacing } from '../constants/theme';
 import { useT } from '../i18n';
 import { CropListing } from '../types';
@@ -19,6 +19,7 @@ export function CropListingCard({
   const t = useT();
 
   const isSoldOut = listing.availableQuantity === 0 || listing.status === 'sold';
+  const hasImageUrl = listing.images?.[0]?.startsWith('http');
 
   return (
     <Pressable
@@ -27,7 +28,15 @@ export function CropListingCard({
     >
       <View style={styles.headerRow}>
         <View style={styles.imageContainer}>
-          <Text style={styles.emojiIcon}>{listing.images[0] || '🌾'}</Text>
+          {hasImageUrl ? (
+            <Image
+              source={{ uri: listing.images[0] }}
+              style={styles.cropThumb}
+              resizeMode="cover"
+            />
+          ) : (
+            <Text style={styles.emojiIcon}>{listing.images?.[0] || '🌾'}</Text>
+          )}
         </View>
 
         <View style={styles.infoContainer}>
@@ -128,6 +137,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: spacing.m,
+    overflow: 'hidden',
+  },
+  cropThumb: {
+    width: '100%',
+    height: '100%',
+    borderRadius: radius.s,
   },
   emojiIcon: {
     fontSize: 32,

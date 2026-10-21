@@ -87,6 +87,12 @@ export default function SettingsScreen() {
           </Pressable>
           <View style={styles.divider} />
 
+          <Pressable style={styles.menuItem} onPress={() => router.push('/cookie-policy' as any)}>
+            <Text style={styles.menuText}>Cookie & Data Use</Text>
+            <Text style={styles.chevron}>›</Text>
+          </Pressable>
+          <View style={styles.divider} />
+
           <Pressable style={styles.menuItem} onPress={() => router.push('/about' as any)}>
             <Text style={styles.menuText}>ℹ️ About Farmer Mate</Text>
             <Text style={styles.chevron}>›</Text>

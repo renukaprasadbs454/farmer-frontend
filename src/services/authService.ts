@@ -1,4 +1,4 @@
-import { sendOtpApi, verifyOtpApi } from './api';
+import { fetchMeApi, sendOtpApi, verifyOtpApi } from './api';
 
 export const authService = {
   async sendOtp(mobile: string): Promise<void> {
@@ -26,5 +26,22 @@ export const authService = {
       activeProfile: res.data?.activeProfile,
     };
   },
-};
 
+  async validateSession(token: string): Promise<{ account?: any; activeProfile?: any }> {
+    const res = await fetchMeApi(token);
+
+    if (!res.success || !res.data?.profile) {
+      throw new Error(res.message || 'Session expired. Please sign in again.');
+    }
+
+    const activeProfile = res.data.profile;
+    if (activeProfile.role !== 'FARMER') {
+      throw new Error('This saved session is not a farmer account.');
+    }
+
+    return {
+      account: activeProfile.account,
+      activeProfile,
+    };
+  },
+};

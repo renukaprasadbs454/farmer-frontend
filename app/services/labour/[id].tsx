@@ -52,6 +52,17 @@ export default function LabourDetailScreen() {
   const availColor = labourer.availability === 'available_today' ? colors.primary
     : labourer.availability === 'available_tomorrow' ? '#D4870E' : colors.muted;
 
+  const SKILL_ICONS: Record<string, string> = {
+    harvesting: '🌾',
+    planting: '🌱',
+    irrigation: '💧',
+    weeding: '🌿',
+    spraying: '🛡️',
+    loading: '📦',
+    general: '👨‍🌾',
+  };
+  const serviceIcon = SKILL_ICONS[labourer.primarySkill] || '👨‍🌾';
+
   return (
     <SafeAreaView style={s.root}>
       <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
@@ -65,30 +76,30 @@ export default function LabourDetailScreen() {
           </Pressable>
         </View>
 
-        {/* Profile */}
+        {/* Service Package Header */}
         <View style={s.profile}>
           <View style={s.avatar}>
-            <Text style={s.avatarText}>{labourer.name.charAt(0)}</Text>
+            <Text style={{ fontSize: 32 }}>{serviceIcon}</Text>
           </View>
           <Text style={s.name}>{labourer.name}</Text>
-          <Text style={s.skill}>{labourCategoryLabel(labourer.primarySkill)}</Text>
+          <Text style={s.skill}>{labourCategoryLabel(labourer.primarySkill)} Service</Text>
           <View style={s.statsRow}>
             <Text style={s.stat}>⭐ {labourer.rating.toFixed(1)}</Text>
             <Text style={s.statSep}>·</Text>
             <Text style={s.stat}>{labourer.completedJobs} {t('completedJobs')}</Text>
-            <Text style={s.statSep}>·</Text>
-            <Text style={s.stat}>{labourer.experience} {t('yearsExperience')}</Text>
           </View>
           <Text style={[s.avail, { color: availColor }]}>{availLabel}</Text>
         </View>
 
-        {/* Skills */}
-        <Text style={s.section}>{t('skills')}</Text>
-        <View style={s.chipRow}>
-          <Chip label={labourCategoryLabel(labourer.primarySkill)} selected onPress={() => {}} />
-          {labourer.secondarySkills.map((sk) => (
-            <Chip key={sk} label={labourCategoryLabel(sk)} onPress={() => {}} />
-          ))}
+        {/* Confidentiality Dispatch Notice */}
+        <View style={s.confidentialBox}>
+          <Text style={s.confidentialBoxIcon}>🔒</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={s.confidentialBoxTitle}>Confidential Service Provider Dispatch</Text>
+            <Text style={s.confidentialBoxDesc}>
+              Worker details and provider identities are confidential. Farmer Mate assigns background-checked, top-rated local workforce directly to your farm on your chosen date.
+            </Text>
+          </View>
         </View>
 
         {/* Pricing */}
@@ -96,23 +107,32 @@ export default function LabourDetailScreen() {
         <View style={s.card}>
           <View style={s.priceRow}>
             <Text style={s.priceLabel}>{t('hourlyRate')}</Text>
-            <Text style={s.priceVal}>₹{labourer.hourlyRate}{t('perHour')}</Text>
+            <Text style={s.priceVal}>₹{labourer.hourlyRate}{t('perHour')} / worker</Text>
           </View>
           <View style={s.priceRow}>
             <Text style={s.priceLabel}>{t('dailyRate')}</Text>
-            <Text style={s.priceVal}>₹{labourer.dailyRate}{t('perDay')}</Text>
+            <Text style={s.priceVal}>₹{labourer.dailyRate}{t('perDay')} / worker</Text>
           </View>
         </View>
 
-        {/* Location */}
+        {/* Skills / Scope */}
+        <Text style={s.section}>Service Scope & Skills Covered</Text>
+        <View style={s.chipRow}>
+          <Chip label={labourCategoryLabel(labourer.primarySkill)} selected onPress={() => {}} />
+          {labourer.secondarySkills.map((sk) => (
+            <Chip key={sk} label={labourCategoryLabel(sk)} onPress={() => {}} />
+          ))}
+        </View>
+
+        {/* Location Cluster */}
         <Text style={s.section}>{t('location')}</Text>
         <Text style={s.body}>📍 {labourer.location.label} — {labourer.distance} {t('kmAway')}</Text>
 
-        {/* About */}
+        {/* About Service */}
         <Text style={s.section}>{t('about')}</Text>
         <Text style={s.body}>{labourer.about}</Text>
 
-        {/* Reviews */}
+        {/* Customer Reviews */}
         <Text style={s.section}>{t('reviews')}</Text>
         {labourer.reviews.map((r) => (
           <View key={r.id} style={s.reviewCard}>
@@ -131,7 +151,7 @@ export default function LabourDetailScreen() {
       {/* Fixed CTA */}
       <View style={s.ctaWrap}>
         <Button
-          title={t('requestWorker')}
+          title={t('bookService')}
           onPress={() => router.push(`/services/labour/booking?id=${labourer.id}`)}
         />
       </View>
@@ -159,6 +179,31 @@ const s = StyleSheet.create({
   stat: { fontSize: font.small, color: colors.ink },
   statSep: { fontSize: font.body, color: colors.muted, marginHorizontal: 8 },
   avail: { fontSize: font.body, fontWeight: '700', marginTop: spacing.sm },
+  confidentialBox: {
+    flexDirection: 'row',
+    backgroundColor: '#EBF4EE',
+    borderWidth: 1,
+    borderColor: '#C5E2D0',
+    borderRadius: radius.md,
+    padding: spacing.md,
+    marginTop: spacing.md,
+    gap: 12,
+    alignItems: 'center',
+  },
+  confidentialBoxIcon: {
+    fontSize: 24,
+  },
+  confidentialBoxTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#0F613B',
+    marginBottom: 2,
+  },
+  confidentialBoxDesc: {
+    fontSize: 11.5,
+    color: '#2E4C38',
+    lineHeight: 16,
+  },
   section: { fontSize: font.body, fontWeight: '800', color: colors.ink, marginTop: spacing.lg, marginBottom: spacing.sm },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   card: { backgroundColor: colors.card, borderRadius: radius.lg, padding: spacing.md, ...shadow.card },

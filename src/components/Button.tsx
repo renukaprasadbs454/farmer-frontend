@@ -29,6 +29,6 @@ const s = StyleSheet.create({
   base: { minHeight: TOUCH, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 20 },
   primary: { backgroundColor: colors.primary },
   secondary: { backgroundColor: colors.accent },
-  outline: { backgroundColor: 'transparent', borderWidth: 2, borderColor: colors.primary },
+  outline: { backgroundColor: 'transparent', borderWidth: 1.5, borderColor: colors.primary },
   text: { fontSize: font.button, fontWeight: '700' },
 });

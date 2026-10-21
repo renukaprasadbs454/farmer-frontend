@@ -1,5 +1,6 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { useEffect } from 'react';
 import { View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { colors, MAX_WIDTH } from '../src/constants/theme';
@@ -10,7 +11,17 @@ import { useFarmerStore } from '../src/store/farmerStore';
 export default function RootLayout() {
   const hydrated = useHydrated();
   const token = useAuthStore((s) => s.token);
+  const sessionChecked = useAuthStore((s) => s.sessionChecked);
+  const validateSession = useAuthStore((s) => s.validateSession);
   const onboarded = useFarmerStore((s) => s.onboarded);
+  const sessionReady = hydrated && sessionChecked;
+
+  useEffect(() => {
+    if (hydrated && !sessionChecked) {
+      validateSession();
+    }
+  }, [hydrated, sessionChecked, validateSession]);
+
   return (
     <SafeAreaProvider>
       {/* On web the app stays a centred, phone-width column instead of stretching. */}
@@ -19,13 +30,13 @@ export default function RootLayout() {
           <StatusBar style="dark" />
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="index" />
-            <Stack.Protected guard={hydrated && !token}>
+            <Stack.Protected guard={sessionReady && !token}>
               <Stack.Screen name="(auth)" />
             </Stack.Protected>
-            <Stack.Protected guard={hydrated && !!token && !onboarded}>
+            <Stack.Protected guard={sessionReady && !!token && !onboarded}>
               <Stack.Screen name="(onboarding)" />
             </Stack.Protected>
-            <Stack.Protected guard={hydrated && !!token && onboarded}>
+            <Stack.Protected guard={sessionReady && !!token && onboarded}>
               <Stack.Screen name="(tabs)" />
               <Stack.Screen name="services/labour/[id]" />
               <Stack.Screen name="services/labour/booking" />

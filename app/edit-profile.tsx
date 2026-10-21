@@ -16,6 +16,7 @@ import { CROPS } from '../src/constants/crops';
 import { colors, font, radius, shadow, spacing } from '../src/constants/theme';
 import { useT } from '../src/i18n';
 import { locationService } from '../src/services/locationService';
+import { updateFarmerProfileApi } from '../src/services/api';
 import { useFarmerStore } from '../src/store/farmerStore';
 import { useLocationStore } from '../src/store/locationStore';
 import { LandUnit } from '../src/types';
@@ -29,18 +30,19 @@ export default function EditProfileScreen() {
   const { setLocation } = useLocationStore();
 
   const [name, setName] = useState<string>(farmer.name || '');
-  const [mobile] = useState<string>(farmer.mobile || '9876543210');
+  const [mobile, setMobile] = useState<string>(farmer.mobile || '');
   const [email, setEmail] = useState<string>(farmer.email || '');
   const [village, setVillage] = useState<string>(farm.village || '');
-  const [taluk, setTaluk] = useState<string>(farm.taluk || 'Mandya');
-  const [district, setDistrict] = useState<string>(farm.district || 'Mandya');
-  const [stateName, setStateName] = useState<string>(farm.state || 'Karnataka');
-  const [pincode, setPincode] = useState<string>(farm.pincode || '571401');
-  const [totalLand, setTotalLand] = useState<string>(String(farm.totalLand || '12'));
-  const [cultivatedLand, setCultivatedLand] = useState<string>(String(farm.cultivatedLand || '9'));
+  const [taluk, setTaluk] = useState<string>(farm.taluk || '');
+  const [district, setDistrict] = useState<string>(farm.district || '');
+  const [stateName, setStateName] = useState<string>(farm.state || '');
+  const [pincode, setPincode] = useState<string>(farm.pincode || '');
+  const [totalLand, setTotalLand] = useState<string>(farm.totalLand ? String(farm.totalLand) : '');
+  const [cultivatedLand, setCultivatedLand] = useState<string>(farm.cultivatedLand ? String(farm.cultivatedLand) : '');
   const [landUnit, setLandUnit] = useState<LandUnit>(farm.landUnit || 'acres');
-  const [selectedCrops, setSelectedCrops] = useState<string[]>(crops || ['onion', 'tomato']);
+  const [selectedCrops, setSelectedCrops] = useState<string[]>(crops || []);
 
+  const [saving, setSaving] = useState(false);
   const [fetchingLocation, setFetchingLocation] = useState(false);
   const [locationFetched, setLocationFetched] = useState(false);
 
@@ -61,9 +63,13 @@ export default function EditProfileScreen() {
       const loc = await locationService.getCurrentLocation();
 
       // Step 2: Reverse geocode to get full address details
+      if (loc.latitude == null || loc.longitude == null) {
+        throw new Error('Location permission was granted, but GPS coordinates were not available.');
+      }
+
       const address = await locationService.reverseGeocode({
-        latitude: loc.latitude ?? 12.5218,
-        longitude: loc.longitude ?? 76.8951,
+        latitude: loc.latitude,
+        longitude: loc.longitude,
       });
 
       // Step 3: Auto-fill all address fields
@@ -93,28 +99,50 @@ export default function EditProfileScreen() {
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!name.trim()) {
       Alert.alert('Required', 'Please enter your name.');
       return;
     }
 
-    setFarmer({ name, email });
-    setFarm({
-      village,
-      taluk,
-      district,
-      pincode,
-      state: stateName,
-      totalLand: Number(totalLand) || 0,
-      cultivatedLand: Number(cultivatedLand) || 0,
-      landUnit,
-    });
-    setCrops(selectedCrops);
+    setSaving(true);
+    try {
+      setFarmer({ name, email, mobile });
+      setFarm({
+        village,
+        taluk,
+        district,
+        pincode,
+        state: stateName,
+        totalLand: Number(totalLand) || 0,
+        cultivatedLand: Number(cultivatedLand) || 0,
+        landUnit,
+      });
+      setCrops(selectedCrops);
 
-    Alert.alert('Profile Saved 🎉', 'Your farmer profile and land information have been updated.', [
-      { text: 'OK', onPress: () => router.back() },
-    ]);
+      try {
+        await updateFarmerProfileApi({
+          fullName: name,
+          state: stateName,
+          district,
+          taluk,
+          village,
+          pincode,
+          totalLandArea: Number(totalLand) || 0,
+          cultivatedLandArea: Number(cultivatedLand) || 0,
+          landUnit,
+          primaryCrops: selectedCrops,
+        });
+      } catch (apiErr) {
+        console.warn('Backend sync warning:', apiErr);
+      }
+
+      Alert.alert('Profile Saved 🎉', 'Your farmer profile and land information have been updated.', [
+        { text: 'OK', onPress: () => router.back() },
+      ]);
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -124,8 +152,8 @@ export default function EditProfileScreen() {
           <Text style={styles.backText}>← {t('back')}</Text>
         </Pressable>
         <Text style={styles.headerTitle}>✏️ Edit Farmer Profile</Text>
-        <Pressable onPress={handleSave}>
-          <Text style={styles.saveHeaderBtn}>Save</Text>
+        <Pressable onPress={handleSave} disabled={saving}>
+          <Text style={styles.saveHeaderBtn}>{saving ? 'Saving...' : 'Save'}</Text>
         </Pressable>
       </View>
 
@@ -136,8 +164,14 @@ export default function EditProfileScreen() {
           <Text style={styles.inputLabel}>Farmer Name *</Text>
           <TextInput style={styles.input} value={name} onChangeText={setName} placeholder="Your Full Name" />
 
-          <Text style={styles.inputLabel}>Mobile Number (Verified)</Text>
-          <TextInput style={[styles.input, styles.disabledInput]} value={`+91 ${mobile}`} editable={false} />
+          <Text style={styles.inputLabel}>Mobile Number *</Text>
+          <TextInput
+            style={styles.input}
+            value={mobile}
+            onChangeText={setMobile}
+            keyboardType="phone-pad"
+            placeholder="10-digit mobile number"
+          />
 
           <Text style={styles.inputLabel}>Email Address (Optional)</Text>
           <TextInput style={styles.input} value={email} onChangeText={setEmail} placeholder="farmer@example.com" />
@@ -356,4 +390,3 @@ const styles = StyleSheet.create({
   },
   saveBtnText: { fontFamily: font.bold, fontSize: 16, color: colors.surface },
 });
-

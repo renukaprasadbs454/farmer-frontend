@@ -135,31 +135,8 @@ export const weatherService = {
         lastUpdated: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
     } catch (err) {
-      console.warn('Fallback weather fetch error:', err);
-      // Fallback mock weather if offline
-      return {
-        temp: 28,
-        condition: 'Partly Cloudy',
-        emoji: '⛅',
-        humidity: 65,
-        rainAmount: 0,
-        windSpeed: 12,
-        rainProbabilityToday: 20,
-        advisory: 'Weather data is offline. Showing estimated forecast.',
-        hourly: [
-          { time: '10 AM', temp: 28, rainProb: 10, code: 0, emoji: '☀️' },
-          { time: '1 PM', temp: 31, rainProb: 20, code: 2, emoji: '⛅' },
-          { time: '4 PM', temp: 29, rainProb: 15, code: 1, emoji: '🌤️' },
-          { time: '7 PM', temp: 26, rainProb: 5, code: 0, emoji: '🌙' },
-        ],
-        daily: [
-          { day: 'Today', maxTemp: 31, minTemp: 22, rainProb: 20, condition: 'Partly Cloudy', emoji: '⛅' },
-          { day: 'Tomorrow', maxTemp: 30, minTemp: 21, rainProb: 40, condition: 'Scattered Rain', emoji: '🌧️' },
-          { day: 'Fri', maxTemp: 32, minTemp: 23, rainProb: 10, condition: 'Sunny', emoji: '☀️' },
-        ],
-        locationLabel: locationLabel || 'Mandya, Karnataka',
-        lastUpdated: 'Just now',
-      };
+      console.warn('Live weather fetch error:', err);
+      throw err instanceof Error ? err : new Error('Unable to fetch live weather');
     }
   },
 };

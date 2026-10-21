@@ -38,10 +38,4 @@ export interface MarketDemandItem {
   avgPrice: string;
 }
 
-export const MOCK_MARKET_DEMAND: MarketDemandItem[] = [
-  { id: 'md1', cropName: 'Red Onion', emoji: '🧅', demandLevel: 'High', priceTrend: 'up', avgPrice: '₹26–₹30 / kg' },
-  { id: 'md2', cropName: 'Hybrid Tomato', emoji: '🍅', demandLevel: 'High', priceTrend: 'up', avgPrice: '₹30–₹35 / kg' },
-  { id: 'md3', cropName: 'Sona Masoori Paddy', emoji: '🌾', demandLevel: 'Medium', priceTrend: 'stable', avgPrice: '₹2,400 / quintal' },
-  { id: 'md4', cropName: 'Yellow Maize', emoji: '🌽', demandLevel: 'High', priceTrend: 'stable', avgPrice: '₹2,100 / quintal' },
-  { id: 'md5', cropName: 'Green Chilli', emoji: '🌶️', demandLevel: 'Medium', priceTrend: 'up', avgPrice: '₹55 / kg' },
-];
+export const MOCK_MARKET_DEMAND: MarketDemandItem[] = [];

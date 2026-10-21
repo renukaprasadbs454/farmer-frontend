@@ -65,7 +65,7 @@ export default function CropDetailScreen() {
 
   const currentFarmerId = useFarmerStore.getState().accountId || 'farmer-me';
   const isSaved = savedCropIds.includes(listing.id);
-  const isMine = listing.farmerId === currentFarmerId || listing.farmerId === 'farmer-current' || listing.farmerId === 'farmer-me';
+  const isMine = listing.farmerId === currentFarmerId || listing.farmerId === 'farmer-me';
   const isSoldOut = listing.availableQuantity === 0 || listing.status === 'sold';
 
   const reqQtyNum = Number(requestedQty) || 0;

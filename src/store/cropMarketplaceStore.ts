@@ -200,7 +200,7 @@ export const useCropMarketplaceStore = create<CropMarketplaceState>()(
       },
     }),
     {
-      name: 'fm-crop-marketplace',
+      name: 'fm-crop-marketplace-v2',
       storage: createJSONStorage(() => AsyncStorage),
       partialize: (s) => ({
         savedCropIds: s.savedCropIds,

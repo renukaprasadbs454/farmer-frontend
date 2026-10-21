@@ -44,6 +44,7 @@ export interface Farm {
   waterSources: WaterSource[];
   hasBorewell: boolean;
   borewellDepthFeet?: number;
+  borewellWaterAvailability?: 'Year-round' | 'Seasonal' | 'Insufficient';
   // Animals
   animals: AnimalCount[];
   // Vehicles
@@ -306,6 +307,7 @@ export interface Product {
 
 export interface ProductFilters {
   category: ProductCategory;
+  categories?: ProductCategory[];
   subcategory: ProductSubcategory | 'all';
   brand: string | 'all';
   minPrice: number;
@@ -314,6 +316,7 @@ export interface ProductFilters {
   organicOnly: boolean;
   inStockOnly: boolean;
   sortBy: 'relevance' | 'price_low_high' | 'price_high_low' | 'rating' | 'newest';
+  search?: string;
 }
 
 export interface CartItem {

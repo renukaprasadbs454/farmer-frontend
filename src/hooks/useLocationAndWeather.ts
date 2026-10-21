@@ -9,9 +9,11 @@ export function useLocationAndWeather() {
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [locationError, setLocationError] = useState<string | null>(null);
+  const [weatherError, setWeatherError] = useState<string | null>(null);
 
   const fetchWeatherForLocation = useCallback(async (loc: Location) => {
     setLoading(true);
+    setWeatherError(null);
     try {
       const data = await weatherService.getLiveWeather(
         loc.latitude ?? 12.5218,
@@ -21,6 +23,8 @@ export function useLocationAndWeather() {
       setWeather(data);
     } catch (err) {
       console.warn('Weather fetch failed:', err);
+      setWeather(null);
+      setWeatherError((err as Error)?.message || 'Unable to fetch live weather');
     } finally {
       setLoading(false);
     }
@@ -59,6 +63,7 @@ export function useLocationAndWeather() {
     weather,
     loading,
     locationError,
+    weatherError,
     permissionGranted,
     fetchLiveGPS,
     refreshWeather: () => fetchWeatherForLocation(currentLocation),

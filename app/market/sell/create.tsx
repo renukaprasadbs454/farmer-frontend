@@ -21,11 +21,9 @@ export default function CreateCropListingScreen() {
   const t = useT();
   const router = useRouter();
 
-  const farmerProfile = useFarmerStore((s) => ({
-    farmer: s.farmer,
-    farm: s.farm,
-    crops: s.crops,
-  }));
+  const farmer = useFarmerStore((s) => s.farmer);
+  const farm = useFarmerStore((s) => s.farm);
+  const farmerCrops = useFarmerStore((s) => s.crops);
 
   const createListing = useCropMarketplaceStore((s) => s.createListing);
 
@@ -49,10 +47,10 @@ export default function CreateCropListingScreen() {
 
   // Auto-fill from onboarding crops if cropName is empty
   useEffect(() => {
-    if (farmerProfile.crops.length > 0 && !cropName) {
-      setCropName(farmerProfile.crops[0]);
+    if (farmerCrops.length > 0 && !cropName) {
+      setCropName(farmerCrops[0]);
     }
-  }, [farmerProfile.crops]);
+  }, [farmerCrops]);
 
   // Validation per step
   const canGoNext = () => {
@@ -87,8 +85,8 @@ export default function CreateCropListingScreen() {
 
       const newListing = await createListing({
         farmerId: currentFarmerId,
-        farmerName: farmerProfile.farmer.name || 'Farmer',
-        farmerMobile: farmerProfile.farmer.mobile,
+        farmerName: farmer.name || 'Farmer',
+        farmerMobile: farmer.mobile,
         cropName,
         category: cropCategory,
         variety: variety || 'Standard Local Variety',
@@ -101,9 +99,9 @@ export default function CreateCropListingScreen() {
         farmingMethod,
         harvestDate,
         location: {
-          label: farmerProfile.farm.village || 'My Farm',
-          district: farmerProfile.farm.district || 'Mandya',
-          state: farmerProfile.farm.state || 'Karnataka',
+          label: farm.village || 'My Farm',
+          district: farm.district || 'Mandya',
+          state: farm.state || 'Karnataka',
         },
         images: images.length > 0 ? images : ['🌾'],
         description:
@@ -170,11 +168,11 @@ export default function CreateCropListingScreen() {
             <Text style={styles.stepTitle}>{t('listCropStep1')}</Text>
 
             {/* Quick Pick from Onboarding Crops */}
-            {farmerProfile.crops.length > 0 && (
+            {farmerCrops.length > 0 && (
               <View style={styles.quickPickSection}>
                 <Text style={styles.inputLabel}>Your Grown Crops (Quick Select):</Text>
                 <View style={styles.chipRow}>
-                  {farmerProfile.crops.map((c) => (
+                  {farmerCrops.map((c) => (
                     <Pressable
                       key={c}
                       style={[
@@ -358,13 +356,13 @@ export default function CreateCropListingScreen() {
             <View style={styles.locationCard}>
               <Text style={styles.locationTitle}>📍 Saved Farm Location</Text>
               <Text style={styles.locationDetail}>
-                Village: {farmerProfile.farm.village || 'N/A'}
+                Village: {farm.village || 'N/A'}
               </Text>
               <Text style={styles.locationDetail}>
-                Taluk / District: {farmerProfile.farm.taluk}, {farmerProfile.farm.district}
+                Taluk / District: {farm.taluk}, {farm.district}
               </Text>
               <Text style={styles.locationDetail}>
-                State & Pincode: {farmerProfile.farm.state} - {farmerProfile.farm.pincode}
+                State & Pincode: {farm.state} - {farm.pincode}
               </Text>
               <Text style={styles.locationSub}>
                 Buyers will view this location to calculate transport & pickup distance.

@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Text } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { Button } from '../../src/components/Button';
 import { Input } from '../../src/components/Input';
 import { ScreenContainer } from '../../src/components/ScreenContainer';
@@ -23,12 +23,40 @@ export default function Login() {
       router.push('/otp');
     }
   };
+
   return (
-    <ScreenContainer>
-      <Text style={{ fontSize: font.title, fontWeight: '800', color: colors.ink, marginBottom: 24 }}>{t('mobile')}</Text>
-      <Input placeholder="98765 43210" keyboardType="number-pad" maxLength={10} value={mobile} onChangeText={setMobile} error={error} />
-      <Input label={t('emailOptional')} keyboardType="email-address" autoCapitalize="none" value={email} onChangeText={setEmail} />
-      <Button title={t('sendOtp')} onPress={submit} loading={loading} disabled={mobile.length !== 10} />
+    <ScreenContainer centered>
+      <View style={s.form}>
+        <Text style={s.title}>{t('mobile')}</Text>
+        <Input
+          placeholder="98765 43210"
+          keyboardType="number-pad"
+          maxLength={10}
+          value={mobile}
+          onChangeText={setMobile}
+          error={error}
+        />
+        <Input
+          label={t('emailOptional')}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          value={email}
+          onChangeText={setEmail}
+        />
+        <Button title={t('sendOtp')} onPress={submit} loading={loading} disabled={mobile.length !== 10} />
+      </View>
     </ScreenContainer>
   );
 }
+
+const s = StyleSheet.create({
+  form: {
+    width: '100%',
+  },
+  title: {
+    fontSize: font.title,
+    fontWeight: '800',
+    color: colors.ink,
+    marginBottom: 24,
+  },
+});

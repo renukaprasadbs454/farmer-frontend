@@ -9,8 +9,9 @@ import { useFarmerStore } from '../src/store/farmerStore';
 export default function Index() {
   const hydrated = useHydrated();
   const token = useAuthStore((s) => s.token);
+  const sessionChecked = useAuthStore((s) => s.sessionChecked);
   const onboarded = useFarmerStore((s) => s.onboarded);
-  if (!hydrated) {
+  if (!hydrated || !sessionChecked) {
     return (
       <View style={{ flex: 1, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' }}>
         <Text style={{ fontSize: 72 }}>🌾</Text>

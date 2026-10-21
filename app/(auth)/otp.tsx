@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Text } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { Button } from '../../src/components/Button';
 import { Input } from '../../src/components/Input';
 import { ScreenContainer } from '../../src/components/ScreenContainer';
@@ -28,11 +28,36 @@ export default function Otp() {
   };
 
   return (
-    <ScreenContainer>
-      <Text style={{ fontSize: font.title, fontWeight: '800', color: colors.ink }}>{t('enterOtp')}</Text>
-      <Text style={{ fontSize: font.body, color: colors.muted, marginVertical: 12 }}>+91 {mobile}</Text>
-      <Input placeholder="• • • •" keyboardType="number-pad" maxLength={6} value={otp} onChangeText={setOtp} error={error} />
-      <Button title={t('verify')} onPress={handleVerify} loading={loading} disabled={otp.length < 4} />
+    <ScreenContainer centered>
+      <View style={s.form}>
+        <Text style={s.title}>{t('enterOtp')}</Text>
+        <Text style={s.mobile}>+91 {mobile}</Text>
+        <Input
+          placeholder="••••••"
+          keyboardType="number-pad"
+          maxLength={6}
+          value={otp}
+          onChangeText={setOtp}
+          error={error}
+        />
+        <Button title={t('verify')} onPress={handleVerify} loading={loading} disabled={otp.length < 4} />
+      </View>
     </ScreenContainer>
   );
 }
+
+const s = StyleSheet.create({
+  form: {
+    width: '100%',
+  },
+  title: {
+    fontSize: font.title,
+    fontWeight: '800',
+    color: colors.ink,
+  },
+  mobile: {
+    fontSize: font.body,
+    color: colors.muted,
+    marginVertical: 12,
+  },
+});
